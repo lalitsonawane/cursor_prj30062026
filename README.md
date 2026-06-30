@@ -7,7 +7,7 @@ Hybrid live mobile app (iOS/Android) with a GPU backend powered by [NVIDIA Locat
 - **Mobile (`mobile/`)**: Expo dev client + Vision Camera live preview, on-device overlays, periodic cloud enrichment
 - **Backend (`backend/`)**: FastAPI `/v1/scan` service with taxonomy-based scan-all pipeline and mock mode for local dev
 
-See [docs/api.md](docs/api.md) and [docs/device-qa.md](docs/device-qa.md).
+See [docs/api.md](docs/api.md), [docs/device-qa.md](docs/device-qa.md), and **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)** for full deployment instructions.
 
 ## Backend
 
