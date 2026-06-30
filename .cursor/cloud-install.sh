@@ -1,19 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Idempotent dependency install for cloud agents. No-op until tooling exists.
-if [[ -f package.json ]]; then
-  if command -v pnpm >/dev/null 2>&1 && [[ -f pnpm-lock.yaml ]]; then
-    pnpm install
+# Idempotent dependency install for cloud agents.
+if [[ -f backend/requirements-dev.txt ]]; then
+  pip install -r backend/requirements-dev.txt || pip install -r backend/requirements.txt
+fi
+
+if [[ -f mobile/package.json ]]; then
+  if command -v pnpm >/dev/null 2>&1 && [[ -f mobile/pnpm-lock.yaml ]]; then
+    (cd mobile && pnpm install)
   elif command -v npm >/dev/null 2>&1; then
-    npm install
+    (cd mobile && npm install)
   fi
-elif [[ -f pyproject.toml ]]; then
-  pip install -e .
-elif [[ -f requirements.txt ]]; then
-  pip install -r requirements.txt
-elif [[ -f Cargo.toml ]]; then
-  cargo fetch
-elif [[ -f go.mod ]]; then
-  go mod download
 fi
