@@ -67,6 +67,27 @@ A task is done when:
 - Add large frameworks or infrastructure without user direction on a greenfield project.
 - Create commits, pull requests, or deploys unless asked.
 
+## Cursor Cloud specific instructions
+
+This repository is configured for [Cursor Cloud Agents](https://cursor.com/docs/cloud-agent) so it can be used from mobile and the web at [cursor.com/agents](https://cursor.com/agents).
+
+### Environment
+
+- Cloud config lives in `.cursor/environment.json`.
+- Startup install runs `.cursor/cloud-install.sh`, which is a no-op until manifests exist (`package.json`, `pyproject.toml`, etc.).
+- When tooling is added, update `.cursor/cloud-install.sh` and the Commands section above with the real install, dev, test, and lint commands.
+
+### Mobile access
+
+1. Connect GitHub in [Cursor Dashboard → Cloud Agents](https://cursor.com/dashboard/cloud-agents) and grant access to `lalitsonawane/cursor_prj30062026`.
+2. Open [cursor.com/agents](https://cursor.com/agents) on your phone.
+3. Select this repository and branch, then start an agent.
+4. Optional: add the site to your home screen (Safari → Share → Add to Home Screen on iOS; Chrome → Install App on Android).
+
+### Secrets
+
+Add API keys and credentials in the Cloud Agents Secrets tab on the dashboard. Do not commit secrets to the repository.
+
 ## Maintenance
 
 As the project gains a stack:
