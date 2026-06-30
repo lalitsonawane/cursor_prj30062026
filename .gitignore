@@ -9,3 +9,6 @@ mobile/.expo/
 mobile/ios/
 mobile/android/
 mobile/.claude/
+profile/node_modules/
+profile/.next/
+profile/out/
