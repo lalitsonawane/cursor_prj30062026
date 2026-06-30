@@ -23,6 +23,10 @@ Inspect before assuming:
 - Mobile dev: `cd mobile && npx expo start`
 - Mobile test: `cd mobile && npm test`
 - Mobile typecheck: `cd mobile && npm run typecheck`
+- Profile install: `cd profile && npm install`
+- Profile dev: `cd profile && npm run dev`
+- Profile build: `cd profile && npm run build`
+- Profile lint: `cd profile && npm run lint`
 
 ## Agent workflow
 

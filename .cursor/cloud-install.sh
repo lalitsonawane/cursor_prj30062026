@@ -13,3 +13,11 @@ if [[ -f mobile/package.json ]]; then
     (cd mobile && npm install)
   fi
 fi
+
+if [[ -f profile/package.json ]]; then
+  if command -v pnpm >/dev/null 2>&1 && [[ -f profile/pnpm-lock.yaml ]]; then
+    (cd profile && pnpm install)
+  elif command -v npm >/dev/null 2>&1; then
+    (cd profile && npm install)
+  fi
+fi
