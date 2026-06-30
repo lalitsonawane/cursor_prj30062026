@@ -1,43 +1,46 @@
-# cursor_prj30062026
+# Surroundings Scanner
 
-Greenfield project repository. Application code and tooling are not configured yet.
+Hybrid live mobile app (iOS/Android) with a GPU backend powered by [NVIDIA LocateAnything-3B](https://huggingface.co/nvidia/LocateAnything-3B).
 
-## Status
+## Architecture
 
-This repo is in early setup. It includes agent guidance for coding assistants; application structure, dependencies, and commands will be added as the project evolves.
+- **Mobile (`mobile/`)**: Expo dev client + Vision Camera live preview, on-device overlays, periodic cloud enrichment
+- **Backend (`backend/`)**: FastAPI `/v1/scan` service with taxonomy-based scan-all pipeline and mock mode for local dev
 
-## Repository contents
+See [docs/api.md](docs/api.md) and [docs/device-qa.md](docs/device-qa.md).
 
-| Path | Purpose |
-|------|---------|
-| [`AGENTS.md`](AGENTS.md) | Instructions for coding agents (Cursor, Codex, Claude Code, etc.) |
-| [`.cursor/environment.json`](.cursor/environment.json) | Cursor Cloud environment configuration |
-| [`.cursor/cloud-install.sh`](.cursor/cloud-install.sh) | Idempotent dependency install for cloud agents |
-| `README.md` | Human-facing project overview (this file) |
+## Backend
 
-## Cursor Cloud (mobile and web)
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install fastapi uvicorn pydantic pydantic-settings python-multipart Pillow numpy httpx
+cp .env.example .env
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-This repo is configured for [Cursor Cloud Agents](https://cursor.com/docs/cloud-agent). Use it from your phone or browser at [cursor.com/agents](https://cursor.com/agents).
+Set `MOCK_INFERENCE=false` and install CUDA PyTorch + full `requirements.txt` on a GPU machine for real LocateAnything inference.
 
-1. Connect GitHub in [Cursor Dashboard → Cloud Agents](https://cursor.com/dashboard/cloud-agents) and grant access to this repository.
-2. Open [cursor.com/agents](https://cursor.com/agents), select `lalitsonawane/cursor_prj30062026`, and start an agent.
-3. Optional: add the site to your home screen for a native-like mobile experience.
+## Mobile
 
-Cloud agents run `.cursor/cloud-install.sh` on startup. It is a no-op until tooling manifests are added. See [`AGENTS.md`](AGENTS.md) for full cloud setup details.
+```bash
+cd mobile
+cp .env.example .env
+npm install
+npx expo prebuild
+npx expo run:ios   # or run:android
+```
 
-## Getting started
+Configure `EXPO_PUBLIC_API_URL` to your backend LAN IP when testing on a physical device.
 
-No install or run steps yet. Once tooling is added, update this section with:
+## Tests
 
-- Prerequisites
-- Install command
-- Dev server / local run command
-- Test and lint commands
+```bash
+cd backend && source .venv/bin/activate && PYTHONPATH=. pytest tests/ -q
+cd ../mobile && npm test
+```
 
-## For coding agents
+## License note
 
-See [`AGENTS.md`](AGENTS.md) for discovery workflow, conventions, verification checklist, and boundaries. Do not assume a tech stack until manifests exist in the repo.
-
-## License
-
-Not specified yet.
+LocateAnything-3B is released under the NVIDIA Open Model License for non-commercial research. Review licensing before shipping a commercial app.

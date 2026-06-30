@@ -16,13 +16,13 @@ Inspect before assuming:
 
 ## Commands
 
-<!-- Fill in once tooling exists -->
-
-- Install: `TODO`
-- Dev: `TODO`
-- Test: `TODO`
-- Lint: `TODO`
-- Build: `TODO`
+- Backend install: `cd backend && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt`
+- Backend dev: `cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+- Backend test: `cd backend && source .venv/bin/activate && PYTHONPATH=. pytest tests/ -q`
+- Mobile install: `cd mobile && npm install`
+- Mobile dev: `cd mobile && npx expo start`
+- Mobile test: `cd mobile && npm test`
+- Mobile typecheck: `cd mobile && npm run typecheck`
 
 ## Agent workflow
 

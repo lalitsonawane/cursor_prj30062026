@@ -1,0 +1,16 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.4
+pydantic-settings==2.7.0
+Pillow==11.1.0
+numpy==1.26.4
+httpx==0.28.1
+
+# LocateAnything inference (install torch separately for your CUDA version)
+opencv-python-headless==4.11.0.86
+transformers==4.57.1
+peft==0.14.0
+torchvision==0.21.0
+decord==0.6.0
+lmdb==1.7.5
