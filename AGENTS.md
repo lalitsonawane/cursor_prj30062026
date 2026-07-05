@@ -77,9 +77,15 @@ This repository is configured for [Cursor Cloud Agents](https://cursor.com/docs/
 
 ### Environment
 
-- Cloud config lives in `.cursor/environment.json`.
-- Startup install runs `.cursor/cloud-install.sh`, which is a no-op until manifests exist (`package.json`, `pyproject.toml`, etc.).
-- When tooling is added, update `.cursor/cloud-install.sh` and the Commands section above with the real install, dev, test, and lint commands.
+- Cloud config lives in `.cursor/environment.json`, whose `install` runs `.cursor/cloud-install.sh` (the source of truth for dependency setup). Edit that script when changing how deps are installed.
+- `.cursor/cloud-install.sh` creates the backend virtualenv at `backend/.venv`, installs the lightweight FastAPI + test deps (not the heavy GPU deps), and runs `npm install` for `mobile/` and `profile/`. It is idempotent.
+- System requirement: creating the backend venv needs the `python3.12-venv` apt package (already present in the base image/snapshot).
+
+### Running the services
+
+- **Backend** (`backend/`, FastAPI): runs in MOCK inference mode on CPU — `MOCK_INFERENCE=true` in `backend/.env` (copy from `.env.example` on first run). Heavy GPU deps in `backend/requirements.txt` (torch, transformers, etc.) are intentionally NOT installed in the cloud VM; real LocateAnything-3B inference needs a CUDA GPU + gated model download. Run with `source backend/.venv/bin/activate` then `PYTHONPATH=. uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` (run from `backend/`). Protected endpoints require the `X-API-Key` header (default `dev-key-change-me` from `.env`); `/health` is open. Tests: `cd backend && source .venv/bin/activate && PYTHONPATH=. pytest tests/ -q`.
+- **Profile** (`profile/`, Next.js 16): `npm run dev` serves on port 3000. `npm run lint` and `npm run build` (Turbopack) both work in the VM.
+- **Mobile** (`mobile/`, Expo): the app CANNOT be launched in the cloud VM — it targets iOS/Android dev clients and depends on `react-native-vision-camera` native modules (Expo web is not supported). Only `npm test` (jest) and `npm run typecheck` (tsc) are runnable here.
 
 ### Mobile access
 
