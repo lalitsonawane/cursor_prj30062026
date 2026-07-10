@@ -29,28 +29,31 @@ npm run dev
 
 Open http://localhost:5173
 
-### AI Copilot
+### AI Copilot (Fireworks)
 
-The **✨ AI** panel (right sidebar) works out of the box with a built-in local agent — no API key required.
-
-For GPT-powered responses, start the backend and set `VITE_API_URL`:
+The **✨ AI** panel uses **Fireworks AI** by default when configured.
 
 ```bash
+# backend/.env (never commit this file)
+FIREWORKS_API_KEY=fw_your_key_here
+FIREWORKS_MODEL=accounts/fireworks/models/deepseek-v4-pro
+LLM_PROVIDER=fireworks
+
 # Terminal 1 — backend
 cd backend && pip install fastapi uvicorn httpx pydantic pydantic-settings
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+PYTHONPATH=. uvicorn app.main:app --reload --port 8000
 
 # Terminal 2 — frontend (proxies /api → backend)
-cd spreadsheet && cp .env.example .env && npm run dev
+cd spreadsheet && npm run dev
 ```
 
-Set `OPENAI_API_KEY` in `backend/.env` for GPT tool-calling. Without it, the backend uses the same local rules engine.
+Without `FIREWORKS_API_KEY`, the local rules engine is used automatically.
 
 **Try asking:**
-- "Summarize selection"
+- "What is the total profit?"
+- "Analyze revenue growth across all quarters"
 - "Add sum formula for B2:E2 in F2"
 - "Format header row bold"
-- "What is the total profit?"
 
 **Shortcut:** `Ctrl+Shift+A` toggles the AI panel.
 
@@ -78,6 +81,7 @@ npm run typecheck  # TypeScript check
 | Ctrl+Y | Redo |
 | Ctrl+C / X / V | Copy / Cut / Paste |
 | Ctrl+D | Fill down |
+| Ctrl+Shift+A | Toggle AI panel |
 | Home / End | Jump to row start/end |
 
 ## Demo workbook

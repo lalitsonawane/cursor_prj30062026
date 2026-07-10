@@ -13,7 +13,7 @@ export function buildWorkbookContext(): WorkbookContextPayload {
   const sel = normalizeSelection(state.selection);
 
   return {
-    activeSheet: sheet.name,
+    active_sheet: sheet.name,
     sheets: state.sheets.map((s) => s.name),
     selection: {
       start_row: sel.startRow,
@@ -48,7 +48,10 @@ export async function sendAiMessage(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
+          messages: [...messages, userMsg]
+            .filter((m) => m.role === 'user' || m.role === 'assistant')
+            .filter((m) => m.id !== 'welcome')
+            .map((m) => ({ role: m.role, content: m.content })),
           context,
         }),
       });
@@ -83,11 +86,19 @@ export async function sendAiMessage(
   return { assistant, applied };
 }
 
-export async function checkAiBackend(): Promise<'online' | 'local'> {
+export async function checkAiBackend(): Promise<'fireworks' | 'openai' | 'local'> {
   if (!API_BASE) return 'local';
   try {
-    const res = await fetch(`${API_BASE.replace(/\/$/, '')}/health`, { signal: AbortSignal.timeout(2000) });
-    return res.ok ? 'online' : 'local';
+    const res = await fetch(`${API_BASE.replace(/\/$/, '')}/v1/spreadsheet/status`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.configured && data.provider === 'fireworks') return 'fireworks';
+      if (data.configured && data.provider === 'openai') return 'openai';
+    }
+    const health = await fetch(`${API_BASE.replace(/\/$/, '')}/health`, { signal: AbortSignal.timeout(2000) });
+    return health.ok ? 'local' : 'local';
   } catch {
     return 'local';
   }

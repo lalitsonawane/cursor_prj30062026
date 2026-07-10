@@ -3,7 +3,7 @@ import { localAgentReply } from './localAgent';
 import type { WorkbookContextPayload } from './types';
 
 const context: WorkbookContextPayload = {
-  activeSheet: 'Budget',
+  active_sheet: 'Budget',
   sheets: ['Budget', 'Formulas'],
   selection: {
     start_row: 0,

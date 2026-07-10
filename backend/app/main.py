@@ -8,7 +8,7 @@ from app.config import settings
 from app.image_utils import load_and_resize_image
 from app.scanner import ScanService
 from app.schemas import GroundRequest, HealthResponse, ScanResponse
-from app.spreadsheet_ai import handle_spreadsheet_chat
+from app.spreadsheet_ai import get_llm_status, handle_spreadsheet_chat
 from app.spreadsheet_schemas import SpreadsheetChatRequest, SpreadsheetChatResponse
 from app.worker import LocateAnythingWorker
 
@@ -97,5 +97,11 @@ async def ground_phrase(
 
 @app.post("/v1/spreadsheet/chat", response_model=SpreadsheetChatResponse)
 async def spreadsheet_chat(body: SpreadsheetChatRequest) -> SpreadsheetChatResponse:
-    """AI copilot for SheetCraft — no API key required (uses local rules as fallback)."""
+    """AI copilot for SheetCraft — Fireworks LLM with local rules fallback."""
     return await handle_spreadsheet_chat(body)
+
+
+@app.get("/v1/spreadsheet/status")
+def spreadsheet_ai_status() -> dict:
+    """Return configured LLM provider for the AI panel."""
+    return get_llm_status()

@@ -52,4 +52,4 @@ class SpreadsheetChatRequest(BaseModel):
 class SpreadsheetChatResponse(BaseModel):
     reply: str
     actions: list[AiAction] = Field(default_factory=list)
-    mode: Literal["local", "openai"] = "local"
+    mode: Literal["local", "openai", "fireworks"] = "local"

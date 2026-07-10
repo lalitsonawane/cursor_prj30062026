@@ -25,7 +25,7 @@ export function AiPanel() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [backendMode, setBackendMode] = useState<'online' | 'local'>('local');
+  const [backendMode, setBackendMode] = useState<'fireworks' | 'openai' | 'local'>('local');
   const listRef = useRef<HTMLDivElement>(null);
 
   const aiPanelOpen = useSpreadsheetStore((s) => s.aiPanelOpen);
@@ -98,7 +98,7 @@ export function AiPanel() {
         <span className="context-chip">{activeSheet.name}</span>
         <span className="context-chip">{selectionLabel}</span>
         <span className={`context-chip mode-${backendMode}`}>
-          {backendMode === 'online' ? 'GPT connected' : 'Local AI'}
+          {backendMode === 'fireworks' ? '🔥 Fireworks AI' : backendMode === 'openai' ? 'GPT connected' : 'Local AI'}
         </span>
       </div>
 
@@ -114,7 +114,9 @@ export function AiPanel() {
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
               />
               {msg.mode && (
-                <span className="ai-mode-tag">{msg.mode === 'openai' ? 'GPT' : 'Local'}</span>
+                <span className="ai-mode-tag">
+                  {msg.mode === 'fireworks' ? 'Fireworks' : msg.mode === 'openai' ? 'GPT' : 'Local'}
+                </span>
               )}
             </div>
           </div>

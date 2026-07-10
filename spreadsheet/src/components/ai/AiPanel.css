@@ -74,9 +74,9 @@
   color: #aaa;
 }
 
-.context-chip.mode-online {
-  background: #1a3a2a;
-  color: #4ade80;
+.context-chip.mode-fireworks {
+  background: #3a1a1a;
+  color: #f97316;
 }
 
 .context-chip.mode-local {

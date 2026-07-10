@@ -1,4 +1,4 @@
-"""AI assistant for SheetCraft spreadsheet — local rules + optional OpenAI."""
+"""AI assistant for SheetCraft spreadsheet — local rules + Fireworks/OpenAI LLM."""
 
 from __future__ import annotations
 
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 SYSTEM_PROMPT = """You are SheetCraft AI, a spreadsheet copilot like Cursor but for Excel.
 You help users analyze data, write formulas, and manipulate their workbook.
 
-When the user asks you to change the spreadsheet, respond with JSON actions.
-Always explain what you did in plain language.
+When the user asks you to change the spreadsheet, you MUST call the spreadsheet_actions tool.
+Always explain what you did in plain language in the reply field.
 
 Available action types:
 - set_cell: {"type":"set_cell","address":"B2","value":"=SUM(B2:E2)"}
@@ -35,16 +35,15 @@ Available action types:
 - clear_range: {"type":"clear_range","range":"A5:B10"}
 
 Formula tips: use =SUM(), =AVERAGE(), =IF(), cell refs like A1, ranges like A1:B5.
-Return your response as JSON: {"reply": "...", "actions": [...]}
-If no spreadsheet changes needed, return empty actions array.
+For analysis-only questions, return empty actions array with a helpful reply.
 """
 
-OPENAI_TOOLS = [
+SPREADSHEET_TOOLS = [
     {
         "type": "function",
         "function": {
             "name": "spreadsheet_actions",
-            "description": "Apply changes to the spreadsheet",
+            "description": "Apply changes to the spreadsheet or respond with analysis",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -86,10 +85,24 @@ def _parse_actions(raw: list[dict[str, Any]]) -> list[AiAction]:
     actions: list[AiAction] = []
     for item in raw:
         try:
-            actions.append(AiAction.model_validate(item))
+            normalized = _normalize_action(item)
+            actions.append(AiAction.model_validate(normalized))
         except Exception:
             logger.warning("Skipping invalid action: %s", item)
     return actions
+
+
+def _normalize_action(item: dict[str, Any]) -> dict[str, Any]:
+    """Normalize LLM output variations to our action schema."""
+    out = dict(item)
+    out["type"] = out.get("type") or out.get("action") or ""
+    if "cell" in out and "address" not in out:
+        out["address"] = out.pop("cell")
+    if out["type"] == "set_cell" and "value" in out and "address" in out:
+        return {"type": "set_cell", "address": out["address"], "value": str(out["value"])}
+    if out["type"] == "format_range" and "range" in out:
+        return {"type": "format_range", "range": out["range"], "format": out.get("format", {})}
+    return out
 
 
 def _local_analyze(context: WorkbookContext, question: str) -> SpreadsheetChatResponse:
@@ -245,7 +258,14 @@ def _summarize_csv(lines: list[str], context: WorkbookContext) -> str:
     return "\n".join(parts)
 
 
-async def _openai_chat(req: SpreadsheetChatRequest) -> SpreadsheetChatResponse:
+async def _llm_chat(
+    req: SpreadsheetChatRequest,
+    *,
+    api_key: str,
+    base_url: str,
+    model: str,
+    mode: str,
+) -> SpreadsheetChatResponse:
     context_block = f"""
 Active sheet: {req.context.active_sheet}
 Sheets: {', '.join(req.context.sheets)}
@@ -261,25 +281,30 @@ Full sheet data (CSV):
         {"role": "system", "content": SYSTEM_PROMPT + "\n\nWorkbook context:\n" + context_block},
     ]
     for msg in req.messages[-10:]:
-        messages.append({"role": msg.role, "content": msg.content})
+        if msg.role in ("user", "assistant"):
+            messages.append({"role": msg.role, "content": msg.content})
 
     payload = {
-        "model": settings.openai_model,
+        "model": model,
         "messages": messages,
-        "tools": OPENAI_TOOLS,
+        "tools": SPREADSHEET_TOOLS,
         "tool_choice": {"type": "function", "function": {"name": "spreadsheet_actions"}},
         "temperature": 0.2,
+        "max_tokens": 2048,
     }
 
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    url = f"{base_url.rstrip('/')}/chat/completions"
+    async with httpx.AsyncClient(timeout=90.0) as client:
         resp = await client.post(
-            "https://api.openai.com/v1/chat/completions",
+            url,
             headers={
-                "Authorization": f"Bearer {settings.openai_api_key}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             json=payload,
         )
+        if not resp.is_success:
+            logger.error("LLM error %s: %s", resp.status_code, resp.text[:500])
         resp.raise_for_status()
         data = resp.json()
 
@@ -290,20 +315,76 @@ Full sheet data (CSV):
         return SpreadsheetChatResponse(
             reply=args.get("reply", "Done."),
             actions=_parse_actions(args.get("actions", [])),
-            mode="openai",
+            mode=mode,  # type: ignore[arg-type]
         )
 
-    return SpreadsheetChatResponse(
-        reply=choice.get("content", "I couldn't process that request."),
-        actions=[],
+    content = choice.get("content") or ""
+    parsed = _try_parse_json_response(content)
+    if parsed:
+        return SpreadsheetChatResponse(
+            reply=parsed.get("reply", content),
+            actions=_parse_actions(parsed.get("actions", [])),
+            mode=mode,  # type: ignore[arg-type]
+        )
+
+    return SpreadsheetChatResponse(reply=content or "I couldn't process that request.", actions=[], mode=mode)  # type: ignore[arg-type]
+
+
+def _try_parse_json_response(content: str) -> dict[str, Any] | None:
+    content = content.strip()
+    if content.startswith("```"):
+        content = re.sub(r"^```(?:json)?\n?", "", content)
+        content = re.sub(r"\n?```$", "", content)
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError:
+        match = re.search(r"\{[\s\S]*\}", content)
+        if match:
+            try:
+                return json.loads(match.group())
+            except json.JSONDecodeError:
+                return None
+    return None
+
+
+async def _fireworks_chat(req: SpreadsheetChatRequest) -> SpreadsheetChatResponse:
+    return await _llm_chat(
+        req,
+        api_key=settings.fireworks_api_key,
+        base_url=settings.fireworks_base_url,
+        model=settings.fireworks_model,
+        mode="fireworks",
+    )
+
+
+async def _openai_chat(req: SpreadsheetChatRequest) -> SpreadsheetChatResponse:
+    return await _llm_chat(
+        req,
+        api_key=settings.openai_api_key,
+        base_url="https://api.openai.com/v1",
+        model=settings.openai_model,
         mode="openai",
     )
+
+
+def get_llm_status() -> dict[str, str | bool]:
+    if settings.fireworks_api_key and settings.llm_provider == "fireworks":
+        return {"provider": "fireworks", "configured": True, "model": settings.fireworks_model}
+    if settings.openai_api_key and settings.llm_provider == "openai":
+        return {"provider": "openai", "configured": True, "model": settings.openai_model}
+    return {"provider": "local", "configured": False, "model": ""}
 
 
 async def handle_spreadsheet_chat(req: SpreadsheetChatRequest) -> SpreadsheetChatResponse:
     last_user = next((m.content for m in reversed(req.messages) if m.role == "user"), "")
 
-    if settings.openai_api_key:
+    if settings.fireworks_api_key and settings.llm_provider == "fireworks":
+        try:
+            return await _fireworks_chat(req)
+        except Exception as exc:
+            logger.warning("Fireworks failed, falling back to local: %s", exc)
+
+    if settings.openai_api_key and settings.llm_provider == "openai":
         try:
             return await _openai_chat(req)
         except Exception as exc:

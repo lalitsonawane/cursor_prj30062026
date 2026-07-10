@@ -6,7 +6,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   actions?: AiAction[];
-  mode?: 'local' | 'openai';
+  mode?: 'local' | 'openai' | 'fireworks';
 }
 
 export interface SelectionContext {
@@ -19,7 +19,7 @@ export interface SelectionContext {
 }
 
 export interface WorkbookContextPayload {
-  activeSheet: string;
+  active_sheet: string;
   sheets: string[];
   selection: {
     start_row: number;
@@ -54,7 +54,7 @@ export interface AiAction {
 export interface AiChatResponse {
   reply: string;
   actions: AiAction[];
-  mode: 'local' | 'openai';
+  mode: 'local' | 'openai' | 'fireworks';
 }
 
 export interface QuickPrompt {
