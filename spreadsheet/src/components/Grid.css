@@ -1,0 +1,103 @@
+.grid-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+}
+
+.grid-scroll {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.grid-table {
+  display: flex;
+  flex-direction: column;
+  min-width: max-content;
+}
+
+.header-row,
+.data-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.grid-corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  height: 24px;
+  background: #f0f0f0;
+  border-right: 1px solid #c0c0c0;
+  border-bottom: 1px solid #c0c0c0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.col-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  background: #f0f0f0;
+  border-right: 1px solid #c0c0c0;
+  border-bottom: 1px solid #c0c0c0;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.col-header:hover {
+  background: #e0e0e0;
+}
+
+.row-header {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  background: #f0f0f0;
+  border-right: 1px solid #c0c0c0;
+  border-bottom: 1px solid #c0c0c0;
+  flex-shrink: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.row-header:hover {
+  background: #e0e0e0;
+}
+
+.resize-handle-col {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 5;
+}
+
+.resize-handle-row {
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  cursor: row-resize;
+  z-index: 5;
+}

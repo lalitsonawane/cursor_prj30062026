@@ -21,3 +21,9 @@ if [[ -f profile/package.json ]]; then
     (cd profile && npm install)
   fi
 fi
+
+if [[ -f spreadsheet/package.json ]]; then
+  if command -v npm >/dev/null 2>&1; then
+    (cd spreadsheet && npm install)
+  fi
+fi

@@ -27,6 +27,10 @@ Inspect before assuming:
 - Profile dev: `cd profile && npm run dev`
 - Profile build: `cd profile && npm run build`
 - Profile lint: `cd profile && npm run lint`
+- Spreadsheet install: `cd spreadsheet && npm install`
+- Spreadsheet dev: `cd spreadsheet && npm run dev`
+- Spreadsheet test: `cd spreadsheet && npm test`
+- Spreadsheet build: `cd spreadsheet && npm run build`
 
 ## Agent workflow
 
