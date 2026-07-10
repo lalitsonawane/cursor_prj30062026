@@ -8,6 +8,8 @@ from app.config import settings
 from app.image_utils import load_and_resize_image
 from app.scanner import ScanService
 from app.schemas import GroundRequest, HealthResponse, ScanResponse
+from app.spreadsheet_ai import handle_spreadsheet_chat
+from app.spreadsheet_schemas import SpreadsheetChatRequest, SpreadsheetChatResponse
 from app.worker import LocateAnythingWorker
 
 logger = logging.getLogger(__name__)
@@ -91,3 +93,9 @@ async def ground_phrase(
     if not phrase.strip():
         raise HTTPException(status_code=422, detail="Phrase is required")
     return service.ground(image, phrase.strip())
+
+
+@app.post("/v1/spreadsheet/chat", response_model=SpreadsheetChatResponse)
+async def spreadsheet_chat(body: SpreadsheetChatRequest) -> SpreadsheetChatResponse:
+    """AI copilot for SheetCraft — no API key required (uses local rules as fallback)."""
+    return await handle_spreadsheet_chat(body)

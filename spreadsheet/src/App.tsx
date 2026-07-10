@@ -4,6 +4,7 @@ import { FormulaBar } from './components/FormulaBar';
 import { Grid } from './components/Grid';
 import { SheetTabs } from './components/SheetTabs';
 import { StatusBar } from './components/StatusBar';
+import { AiPanel } from './components/ai/AiPanel';
 import { useKeyboard } from './hooks/useKeyboard';
 import { useSpreadsheetStore } from './store/spreadsheetStore';
 import { DEMO_SHEETS } from './data/demoWorkbook';
@@ -30,7 +31,10 @@ function App() {
     <div className="app">
       <Toolbar />
       <FormulaBar />
-      <Grid />
+      <div className="app-body">
+        <Grid />
+        <AiPanel />
+      </div>
       <SheetTabs />
       <StatusBar />
     </div>

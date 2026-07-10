@@ -17,6 +17,8 @@ export function useKeyboard() {
   const redo = useSpreadsheetStore((s) => s.redo);
   const clearSelection = useSpreadsheetStore((s) => s.clearSelection);
   const fillDown = useSpreadsheetStore((s) => s.fillDown);
+  const setAiPanelOpen = useSpreadsheetStore((s) => s.setAiPanelOpen);
+  const aiPanelOpen = useSpreadsheetStore((s) => s.aiPanelOpen);
   const getCellRaw = useSpreadsheetStore((s) => s.getCellRaw);
 
   useEffect(() => {
@@ -58,6 +60,11 @@ export function useKeyboard() {
       if (ctrl && e.key === 'd') {
         e.preventDefault();
         fillDown();
+        return;
+      }
+      if (ctrl && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setAiPanelOpen(!aiPanelOpen);
         return;
       }
 
@@ -135,5 +142,6 @@ export function useKeyboard() {
   }, [
     selection, editingCell, setSelection, startEdit, commitEdit, cancelEdit,
     setEditValue, copy, cut, paste, undo, redo, clearSelection, fillDown, getCellRaw,
+    setAiPanelOpen, aiPanelOpen,
   ]);
 }

@@ -13,6 +13,8 @@ export function Toolbar() {
   const loadWorkbook = useSpreadsheetStore((s) => s.loadWorkbook);
   const activeSheetId = useSpreadsheetStore((s) => s.activeSheetId);
   const sheets = useSpreadsheetStore((s) => s.sheets);
+  const aiPanelOpen = useSpreadsheetStore((s) => s.aiPanelOpen);
+  const setAiPanelOpen = useSpreadsheetStore((s) => s.setAiPanelOpen);
 
   const handleExport = () => {
     const csv = exportToCsv(getActiveSheet());
@@ -135,6 +137,13 @@ export function Toolbar() {
       <div className="toolbar-spacer" />
 
       <div className="toolbar-section">
+        <button
+          className={`toolbar-btn action-btn ai-toggle ${aiPanelOpen ? 'active' : ''}`}
+          onClick={() => setAiPanelOpen(!aiPanelOpen)}
+          title="Toggle AI panel (Ctrl+Shift+A)"
+        >
+          ✨ AI
+        </button>
         <button className="toolbar-btn action-btn" onClick={() => {
           localStorage.removeItem('excel-clone-workbook');
           loadWorkbook(

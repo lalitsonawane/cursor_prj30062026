@@ -5,6 +5,7 @@ A full-featured browser-based spreadsheet application built with React, TypeScri
 ## Features
 
 - **Grid**: 200 rows × 26 columns with sticky row/column headers
+- **AI Copilot**: Cursor-style sidebar — analyze data, write formulas, format cells via natural language
 - **Cell editing**: Double-click or type to edit; formula bar for formulas
 - **Formulas**: `SUM`, `AVERAGE`, `MIN`, `MAX`, `COUNT`, `IF`, `ROUND`, `CONCATENATE`, and more
 - **Cell references**: `A1`, ranges like `A1:B5`, arithmetic expressions
@@ -27,6 +28,31 @@ npm run dev
 ```
 
 Open http://localhost:5173
+
+### AI Copilot
+
+The **✨ AI** panel (right sidebar) works out of the box with a built-in local agent — no API key required.
+
+For GPT-powered responses, start the backend and set `VITE_API_URL`:
+
+```bash
+# Terminal 1 — backend
+cd backend && pip install fastapi uvicorn httpx pydantic pydantic-settings
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2 — frontend (proxies /api → backend)
+cd spreadsheet && cp .env.example .env && npm run dev
+```
+
+Set `OPENAI_API_KEY` in `backend/.env` for GPT tool-calling. Without it, the backend uses the same local rules engine.
+
+**Try asking:**
+- "Summarize selection"
+- "Add sum formula for B2:E2 in F2"
+- "Format header row bold"
+- "What is the total profit?"
+
+**Shortcut:** `Ctrl+Shift+A` toggles the AI panel.
 
 ## Commands
 

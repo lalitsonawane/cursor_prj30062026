@@ -28,11 +28,14 @@ interface Store {
   clipboard: { cells: Record<string, CellData>; rows: number; cols: number } | null;
   undoStack: Sheet[][];
   redoStack: Sheet[][];
+  aiPanelOpen: boolean;
 
   getActiveSheet: () => Sheet;
   getCell: (row: number, col: number) => CellData | undefined;
   getCellRaw: (row: number, col: number) => string;
   setCell: (row: number, col: number, raw: string, pushHistory?: boolean) => void;
+  setCellsBatch: (updates: { row: number; col: number; raw: string }[]) => void;
+  applyFormatToRange: (sel: Selection, format: Partial<CellFormat>) => void;
   setCellFormat: (format: Partial<CellFormat>) => void;
   setSelection: (sel: Selection) => void;
   startEdit: (row: number, col: number) => void;
@@ -56,6 +59,7 @@ interface Store {
   loadWorkbook: (sheets: Sheet[], activeId: string) => void;
   saveToStorage: () => void;
   loadFromStorage: () => void;
+  setAiPanelOpen: (open: boolean) => void;
 }
 
 function pushUndo(state: Store) {
@@ -76,6 +80,7 @@ export const useSpreadsheetStore = create<Store>((set, get) => {
     clipboard: null,
     undoStack: [],
     redoStack: [],
+    aiPanelOpen: true,
 
     getActiveSheet: () => get().sheets.find((s) => s.id === get().activeSheetId)!,
 
@@ -103,6 +108,46 @@ export const useSpreadsheetStore = create<Store>((set, get) => {
           sheets,
           ...(pushHistory ? pushUndo(state) : {}),
         };
+      });
+      get().saveToStorage();
+    },
+
+    setCellsBatch: (updates) => {
+      if (!updates.length) return;
+      set((state) => {
+        const sheets = cloneSheets(state.sheets);
+        const sheet = sheets.find((s) => s.id === state.activeSheetId)!;
+        for (const { row, col, raw } of updates) {
+          const key = cellKey(row, col);
+          if (!raw) delete sheet.cells[key];
+          else {
+            sheet.cells[key] = {
+              raw,
+              format: sheet.cells[key]?.format ?? { ...DEFAULT_FORMAT },
+            };
+          }
+        }
+        return { sheets, ...pushUndo(state) };
+      });
+      get().saveToStorage();
+    },
+
+    applyFormatToRange: (sel, format) => {
+      const normalized = normalizeSelection(sel);
+      set((state) => {
+        const sheets = cloneSheets(state.sheets);
+        const sheet = sheets.find((s) => s.id === state.activeSheetId)!;
+        for (let r = normalized.startRow; r <= normalized.endRow; r++) {
+          for (let c = normalized.startCol; c <= normalized.endCol; c++) {
+            const key = cellKey(r, c);
+            const existing = sheet.cells[key];
+            sheet.cells[key] = {
+              raw: existing?.raw ?? '',
+              format: { ...(existing?.format ?? DEFAULT_FORMAT), ...format },
+            };
+          }
+        }
+        return { sheets, ...pushUndo(state) };
       });
       get().saveToStorage();
     },
@@ -348,6 +393,8 @@ export const useSpreadsheetStore = create<Store>((set, get) => {
         }
       } catch { /* ignore */ }
     },
+
+    setAiPanelOpen: (open) => set({ aiPanelOpen: open }),
   };
 });
 
