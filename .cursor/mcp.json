@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "monday-mcp": {
+      "url": "https://mcp.monday.com/mcp",
+      "headers": {
+        "Api-Version": "2026-07"
+      }
+    }
+  }
+}

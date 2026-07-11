@@ -103,3 +103,7 @@ As the project gains a stack:
 1. Replace `TODO` entries in the Commands section with real commands.
 2. Add stack-specific sections (API patterns, database migrations, deploy target).
 3. For monorepos, add nested `AGENTS.md` files in subpackages; the nearest file takes precedence.
+
+## MCP integrations
+
+- **monday.com**: `.cursor/mcp.json` configures the hosted Platform MCP (`https://mcp.monday.com/mcp`). Complete OAuth in Cursor Settings → Tools & MCP. See [docs/monday-mcp.md](docs/monday-mcp.md).
