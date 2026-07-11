@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     scene_lister_mode: str = "taxonomy"  # taxonomy | openai
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
+    fireworks_api_key: str = ""
+    fireworks_model: str = "accounts/fireworks/models/deepseek-v4-pro"
+    fireworks_base_url: str = "https://api.fireworks.ai/inference/v1"
+    llm_provider: str = "fireworks"  # fireworks | openai | local
     cors_origins: str = "*"
     host: str = "0.0.0.0"
     port: int = 8000
