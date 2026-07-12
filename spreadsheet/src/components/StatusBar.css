@@ -1,0 +1,20 @@
+.status-bar {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  background: #217346;
+  color: #fff;
+  padding: 0 12px;
+  font-size: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.status-spacer {
+  flex: 1;
+}
+
+.status-item {
+  opacity: 0.9;
+}
